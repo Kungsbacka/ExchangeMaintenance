@@ -61,7 +61,7 @@
         return $true
     }
 
-    hidden [psobject[]]_internalProcessMailbox($mailbox) {
+    hidden [void]_internalProcessMailbox($mailbox) {
         # This method does the actual processing.
         # Called once for each mailbox in the batch.
         throw 'Not implemented'
@@ -74,7 +74,7 @@
 }
 
 <#
-class TemplateTask {
+class TemplateTask : MailboxTask {
 
     hidden [void]_internalInitialize() {
 
