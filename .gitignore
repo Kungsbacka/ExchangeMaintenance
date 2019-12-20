@@ -1,0 +1,6 @@
+Config.ps1
+deploy.cmd
+log.txt
+stacktrace.txt
+mailboxes.csv
+.vscode
