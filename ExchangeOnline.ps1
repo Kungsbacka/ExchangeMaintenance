@@ -93,7 +93,7 @@
         return [ExchangeOnline]::_internalExecuteCommand('Get-MailboxStatistics', $params)
     }
 
-    static [void]RemoveMailboxFolderPermissions([hashtable]$params) {
+    static [void]RemoveMailboxFolderPermission([hashtable]$params) {
         [ExchangeOnline]::_internalExecuteCommand('Remove-MailboxFolderPermission', $params)
     }
 

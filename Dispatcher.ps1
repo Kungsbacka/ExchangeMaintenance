@@ -84,7 +84,7 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
                 break
             }
-            Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -StackTrace $_.Exception.StackTrace
+            Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -ErrorRecord $_
         }
         $task.GetLog() | Log
     }

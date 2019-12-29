@@ -10,7 +10,7 @@
         [Parameter(Mandatory=$false,ParameterSetName='Message')]
         $Mailbox,
         [Parameter(Mandatory=$false,ParameterSetName='Message')]
-        [string]$StackTrace
+        [object]$ErrorRecord
     )
     process {
         if ($PSCmdlet.ParameterSetName -eq 'Message') {
@@ -33,10 +33,12 @@
                 }
                 [LogDb]::ExecuteOnly('dbo.spNewExchangeMaintenanceLogEntry', $params)
             }
-            if ($StackTrace) {
-                $filePath = Join-Path -Path $Script:Config.LogPath -ChildPath 'stacktrace.txt'
-                $LogItem.ToString() | Out-File -FilePath $filePath -Encoding UTF8 -Append
-                $StackTrace | Out-File -FilePath $filePath -Encoding UTF8 -Append
+        }
+        if ($ErrorRecord) {
+            if ($Script:Config.LogPath) {
+                $fileName = 'error_' + (Get-Date -Format 'yyyyMMdd_HHmmss_mmm') + '.xml'
+                $filePath = Join-Path -Path $Script:Config.LogPath -ChildPath $fileName
+                $ErrorRecord | Export-Clixml -Path $filePath -Encoding UTF8
             }
         }
     }
