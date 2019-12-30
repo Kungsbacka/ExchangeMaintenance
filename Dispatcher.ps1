@@ -84,7 +84,11 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
                 break
             }
-            Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -ErrorRecord $_
+            # Ignore "mailbox not found". Since we are working with a cached list of mailboxes,
+            # this is bound to happen now and then and will just clutter the log.
+            if ($_.CategoryInfo.Reason -ne 'ManagementObjectNotFoundException') {
+                Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -ErrorRecord $_
+            }
         }
         $task.GetLog() | Log
     }
