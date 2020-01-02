@@ -78,7 +78,7 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
             $task.ProcessMailbox($mailbox)
         }
         catch {
-            if ($_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException') {
+            if ($_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException' -or $_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException' -eq 'ADServerSettingsChangedException') {
                 $queue.Enqueue($mailbox) # if connection failed we want to process current mailbox on next run
                 $connectionBroken = $true
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"

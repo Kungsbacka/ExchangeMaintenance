@@ -23,8 +23,12 @@
             Identity = $mailbox.Identity
         }
         $stats = [ExchangeOnline]::GetMailboxStatistics($params)
+        $azureAdGuid = [System.DBNull]
+        if ($mailbox.ExternalDirectoryObjectId) {
+            $azureAdGuid = $mailbox.ExternalDirectoryObjectId
+        }
         $row = $this._dataTable.NewRow()
-        $row['AzureAdGuid'] = (if ($mailbox.ExternalDirectoryObjectId) {$mailbox.ExternalDirectoryObjectId} else {[System.DBNull]})
+        $row['AzureAdGuid'] = $azureAdGuid
         $row['ExchangeGuid'] = $mailbox.Guid
         $row['PrimarySmtpAddress'] = $mailbox.PrimarySmtpAddress
         $row['IsShared'] = $mailbox.IsShared
