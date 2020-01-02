@@ -23,6 +23,7 @@
             Identity = $mailbox.Identity
         }
         $stats = [ExchangeOnline]::GetMailboxStatistics($params)
+        # Exchange system mailboxes does not have an ExternalDirectoryObjectId
         $azureAdGuid = [System.DBNull]
         if ($mailbox.ExternalDirectoryObjectId) {
             $azureAdGuid = $mailbox.ExternalDirectoryObjectId
