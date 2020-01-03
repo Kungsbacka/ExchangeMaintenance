@@ -86,7 +86,7 @@ if ($tasks.Count -eq 0) {
 
 # Call ProcessMailbox on mailboxes in batch
 $mailboxCount = 0
-$connectionBroken = $false
+$needToReconnect = $false
 while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
     $mailbox = $queue.Dequeue()
     foreach ($task in $tasks) {
@@ -96,7 +96,7 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
         catch {
             if ($_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException' -or $_.CategoryInfo.Reason -eq 'ADServerSettingsChangedException') {
                 $queue.Enqueue($mailbox) # if connection failed we want to process current mailbox on next run
-                $connectionBroken = $true
+                $needToReconnect = $true
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
                 break
             }
@@ -108,8 +108,8 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
         }
         $task.GetLog() | Log
     }
-    if ($connectionBroken) {
-        break # If connection is broken, we exit and reschedule
+    if ($needToReconnect) {
+        break # Stop processing and reschedule
     }
     $mailboxCount++
 }
