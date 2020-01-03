@@ -7,6 +7,11 @@
 . "$PSScriptRoot\MailboxTask.ps1"
 . "$PSScriptRoot\Logger.ps1"
 
+function RescheduleTask {
+    $trigger = New-ScheduledTaskTrigger -At (Get-Date).Add($Script:Config.BatchDelay) -Once
+    $null = Set-ScheduledTask -TaskName $Script:Config.ScheduledTaskName -Trigger $trigger
+}
+
 $tasks = New-Object -TypeName 'System.Collections.ArrayList'
 Get-ChildItem "$PSScriptRoot\Tasks\*.ps1" | ForEach-Object {
     . $_.FullName
@@ -17,7 +22,7 @@ Get-ChildItem "$PSScriptRoot\Tasks\*.ps1" | ForEach-Object {
 [ExchangeOnline]::Connect()
 [ExchangeOnline]::Simulate = $Script:Config.Simulate
 
-Log -Task 'Dispatcher:Start' -Message "Started new batch with $($Script:Config.BatchSize) mailboxes"
+Log -Task 'Dispatcher:Start' -Message "Started new batch. Batch size is $($Script:Config.BatchSize)"
 
 $startTime = Get-Date
 
@@ -29,12 +34,21 @@ try {
         }
         $queue.Enqueue($_)
     }
+    Log -Task 'Dispatcher:ImportCsv' -Message "Loaded $($queue.Count) saved mailboxes"
 }
 catch {
     # Failed to load file
 }
 if ($queue.Count -eq 0) {
-    $mailboxes = [ExchangeOnline]::GetMailbox(@{ResultSize = 'Unlimited'})
+    Log -Task 'Dispatcher:GetMailbox' -Message 'No saved mailboxes found. Fetching all mailboxes'
+    try {
+        $mailboxes = [ExchangeOnline]::GetMailbox(@{ResultSize = 'Unlimited'})
+    }
+    catch {
+        # We expect Get-Mailbox to fail sometimes, so we reschedule and cross our fingers
+        RescheduleTask
+        exit 0
+    }
     foreach ($item in $mailboxes) {
         $obj = [PSCustomObject]@{
             AddressBookPolicy = $item.AddressBookPolicy
@@ -64,6 +78,8 @@ foreach ($task in $tasks) {
     }
 }
 if ($tasks.Count -eq 0) {
+    # If all initializers failed, there must be something seriously wrong and running the
+    # script again will probably not solve the problem.
     Log -Task 'Dispatcher:Initialize' -Message "Initializers for all tasks failed. Script is NOT rescheduled."
     exit 1
 }
@@ -118,6 +134,4 @@ else {
 $batchTime = (Get-Date) - $startTime
 Log -Task 'Dispatcher:End' -Message "Batch ended after $($batchTime.ToString('hh\:mm\:ss'))"
 
-# Reschedule
-$trigger = New-ScheduledTaskTrigger -At (Get-Date).Add($Script:Config.BatchDelay) -Once
-$null = Set-ScheduledTask -TaskName $Script:Config.ScheduledTaskName -Trigger $trigger
+RescheduleTask

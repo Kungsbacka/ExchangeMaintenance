@@ -54,7 +54,7 @@
 
     hidden static [object]_internalExecuteCommand([string]$command, [hashtable]$params) {
         if (-not [ExchangeOnline]::_isConnected) {
-            throw "Call Connect() before executing commands."
+            throw "Call Connect() before calling other methods"
         }
         $params.ErrorAction = 'Stop'
         if ($command -like 'Set-*' -or $command -like 'Remove-*') {
@@ -63,18 +63,7 @@
             }
             $params.Confirm = $false
         }
-        try {
-            return (& $command @params)
-        }
-        catch {
-            if ($_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException') {
-                [ExchangeOnline]::_internalReconnect()
-                return (& $command @params)
-            }
-            else {
-                throw
-            }
-        }
+        return (& $command @params)
     }
 
     static [object]GetMailbox([hashtable]$params) {
