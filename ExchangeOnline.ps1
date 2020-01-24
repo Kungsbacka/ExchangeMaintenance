@@ -63,7 +63,11 @@
             }
             $params.Confirm = $false
         }
-        return (& $command @params)
+        $result = & $command @params
+        if ($result) {
+            return $result
+        }
+        return $null
     }
 
     static [object]GetMailbox([hashtable]$params) {

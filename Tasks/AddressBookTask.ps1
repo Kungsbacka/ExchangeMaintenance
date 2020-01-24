@@ -26,7 +26,7 @@
             $abp = 'ABP-Skola'
         }
         elseif ($this._isSkolpersonal($mailbox)) {
-            $abp = ''
+            $abp = $null
         }
         if (-not $this._abpEqual($mailbox.AddressBookPolicy, $abp)) {
             $this._addLogItem('AddressBookTask', $mailbox, "Change ABP from '$($mailbox.AddressBookPolicy)' to '$abp'")

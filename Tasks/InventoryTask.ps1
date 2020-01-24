@@ -24,12 +24,10 @@
         }
         $stats = [ExchangeOnline]::GetMailboxStatistics($params)
         # Exchange system mailboxes does not have an ExternalDirectoryObjectId
-        $azureAdGuid = [System.DBNull]
-        if ($mailbox.ExternalDirectoryObjectId) {
-            $azureAdGuid = $mailbox.ExternalDirectoryObjectId
-        }
         $row = $this._dataTable.NewRow()
-        $row['AzureAdGuid'] = $azureAdGuid
+        if ($mailbox.ExternalDirectoryObjectId) {
+            $row['AzureAdGuid'] = $mailbox.ExternalDirectoryObjectId
+        }
         $row['ExchangeGuid'] = $mailbox.Guid
         $row['PrimarySmtpAddress'] = $mailbox.PrimarySmtpAddress
         $row['IsShared'] = $mailbox.IsShared

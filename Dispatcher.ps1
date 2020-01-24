@@ -8,7 +8,8 @@
 . "$PSScriptRoot\Logger.ps1"
 
 function RescheduleTask {
-    $trigger = New-ScheduledTaskTrigger -At (Get-Date).Add($Script:Config.BatchDelay) -Once
+    # -Daily makes sure that the task will run even if the dispatcher failed to reschedule
+    $trigger = New-ScheduledTaskTrigger -At (Get-Date).Add($Script:Config.BatchDelay) -Daily
     $null = Set-ScheduledTask -TaskName $Script:Config.ScheduledTaskName -Trigger $trigger
 }
 
@@ -39,13 +40,14 @@ try {
 catch {
     # Failed to load file
 }
+
 if ($queue.Count -eq 0) {
     Log -Task 'Dispatcher:GetMailbox' -Message 'No saved mailboxes found. Fetching all mailboxes'
     try {
         $mailboxes = [ExchangeOnline]::GetMailbox(@{ResultSize = 'Unlimited'})
     }
     catch {
-        # We expect Get-Mailbox to fail sometimes, so we reschedule and cross our fingers
+        # Getting all mailboxes in the tenant can fail sometimes, so we reschedule and try again
         RescheduleTask
         exit 0
     }
@@ -81,8 +83,14 @@ if ($tasks.Count -eq 0) {
     # If all initializers failed, there must be something seriously wrong and running the
     # script again will probably not solve the problem.
     Log -Task 'Dispatcher:Initialize' -Message "Initializers for all tasks failed. Script is NOT rescheduled."
-    exit 1
+    exit 99
 }
+
+$reasonsToReconnect = @(
+    'ConnectionFailedTransientException'
+    'ADServerSettingsChangedException'
+    'PSRemotingTransportException'
+)
 
 # Call ProcessMailbox on mailboxes in batch
 $mailboxCount = 0
@@ -94,13 +102,13 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
             $task.ProcessMailbox($mailbox)
         }
         catch {
-            if ($_.CategoryInfo.Reason -eq 'ConnectionFailedTransientException' -or $_.CategoryInfo.Reason -eq 'ADServerSettingsChangedException') {
+            if ($_.CategoryInfo.Reason -in $reasonsToReconnect) {
                 $queue.Enqueue($mailbox) # if connection failed we want to process current mailbox on next run
                 $needToReconnect = $true
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
                 break
             }
-            # Ignore "mailbox not found". Since we are working with a cached list of mailboxes,
+            # Log all other exceptions except "mailbox not found". Since we are working with a cached list of mailboxes,
             # this is bound to happen now and then and will just clutter the log.
             if ($_.CategoryInfo.Reason -ne 'ManagementObjectNotFoundException') {
                 Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -ErrorRecord $_
