@@ -34,10 +34,10 @@
         $row['IsResource'] = $mailbox.IsResource
         $row['IsForwarded'] = ($null -ne $mailbox.ForwardingAddress -or $null -ne $mailbox.ForwardingSmtpAddress)
         $row['ResourceType'] = $mailbox.ResourceType
-        $row['ItemCount'] = $stats.ItemCount
-        $row['DeletedItemCount'] = $stats.DeletedItemCount
-        $row['TotalItemSize'] = $this._parseSize($stats.TotalItemSize)
-        $row['TotalDeletedItemSize'] = $this._parseSize($stats.TotalDeletedItemSize)
+        $row['ItemCount'] = [InventoryTask]::_toInt($stats.ItemCount)
+        $row['DeletedItemCount'] = [InventoryTask]::_toInt($stats.DeletedItemCount)
+        $row['TotalItemSize'] = [InventoryTask]::_parseSize($stats.TotalItemSize)
+        $row['TotalDeletedItemSize'] = [InventoryTask]::_parseSize($stats.TotalDeletedItemSize)
         $this._dataTable.Rows.Add($row)
     }
 
@@ -47,7 +47,10 @@
         [MetaDirectoryDb]::ExecuteOnly('dbo.spMailboxInventoryUpsert', $null)
     }
 
-    hidden [long]_parseSize($bqs) {
+    hidden static [long]_parseSize($bqs) {
+        if ($null -eq $bqs) {
+            return 0
+        }
         $str = $bqs.ToString()
         if ($str -eq 'Unlimited') {
             return 0
@@ -61,5 +64,12 @@
             return 0
         }
         return [long]$tmp[0]
+    }
+
+    hidden static [int]_toInt($obj) {
+        if ($null -eq $obj) {
+            return 0
+        }
+        return [int]$obj
     }
 }

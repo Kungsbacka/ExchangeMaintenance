@@ -90,6 +90,8 @@ $reasonsToReconnect = @(
     'ConnectionFailedTransientException'
     'ADServerSettingsChangedException'
     'PSRemotingTransportException'
+    'DatabaseUnavailableException'
+    'MapiNetworkErrorException'
 )
 
 # Call ProcessMailbox on mailboxes in batch
