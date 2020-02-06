@@ -92,6 +92,7 @@ $reasonsToReconnect = @(
     'PSRemotingTransportException'
     'DatabaseUnavailableException'
     'MapiNetworkErrorException'
+    'UnableToFindServerForDatabaseException'
 )
 
 # Call ProcessMailbox on mailboxes in batch
