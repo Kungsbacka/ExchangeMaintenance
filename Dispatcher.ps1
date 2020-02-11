@@ -89,10 +89,13 @@ if ($tasks.Count -eq 0) {
 $reasonsToReconnect = @(
     'ConnectionFailedTransientException'
     'ADServerSettingsChangedException'
+    'ADTopologyEndpointNotFoundException'
     'PSRemotingTransportException'
     'DatabaseUnavailableException'
     'MapiNetworkErrorException'
     'UnableToFindServerForDatabaseException'
+    'CommandNotFoundException'
+    'MethodInvocationException'
 )
 
 # Call ProcessMailbox on mailboxes in batch
