@@ -1,9 +1,9 @@
 ﻿class AddressBookTask : MailboxTask
 {
-    hidden [System.Collections.Generic.Dictionary[string,string]]$_includedUsers
+    hidden [System.Collections.Generic.Dictionary[string,object]]$_includedUsers
 
     hidden [void]_internalInitialize() {
-        $this._includedUsers = New-Object -TypeName 'System.Collections.Generic.Dictionary[string,string]'
+        $this._includedUsers = New-Object -TypeName 'System.Collections.Generic.Dictionary[string,object]'
         $query = 'SELECT UserPrincipalName,Department,PhysicalDeliveryOfficeName FROM dbo.ExchangeMaintenanceUserView'
         $result = [MetaDirectoryDb]::GetData($query, $null)
         foreach ($item in $result) {
