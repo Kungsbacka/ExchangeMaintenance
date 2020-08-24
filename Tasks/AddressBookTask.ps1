@@ -45,7 +45,7 @@
     hidden [bool]_isSkolpersonal($mailbox) {
         $item = $null
         if ($this._includedUsers.TryGetValue($mailbox.PrimarySmtpAddress, [ref]$item)) {
-            return $item.Department -eq 'Förskola & Grundskola' -or $item.Department -eq 'Gymnasium & Arbetsmarknad' -or $item.PhysicalDeliveryOfficeName -eq 'Lärare Kulturskolan'
+            return $item.Department -eq 'Förskola & Grundskola' -or $item.Department -eq 'Gymnasium & Arbetsmarknad' -or $item.PhysicalDeliveryOfficeName -like 'Lärare Kulturskolan*'
         }
         return $false
     }

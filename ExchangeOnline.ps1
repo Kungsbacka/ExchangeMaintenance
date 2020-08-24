@@ -6,7 +6,6 @@
 
     static [bool]$Simulate = $false
 
-
     static [void]Connect() {
         if ([ExchangeOnline]::_isConnected) {
             return

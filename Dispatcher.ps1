@@ -19,8 +19,14 @@ Get-ChildItem "$PSScriptRoot\Tasks\*.ps1" | ForEach-Object {
     $task = New-Object -TypeName ([System.IO.Path]::GetFileNameWithoutExtension($_.Name))
     $null = $tasks.Add($task)
 }
-
-[ExchangeOnline]::Connect()
+try {
+    [ExchangeOnline]::Connect()
+}
+catch {
+    Log -Task 'Dispatcher:Connect' -Message 'Failed to connect to Exchange' -ErrorRecord $_
+    RescheduleTask
+    exit
+}
 [ExchangeOnline]::Simulate = $Script:Config.Simulate
 
 Log -Task 'Dispatcher:Start' -Message "Started new batch. Batch size is $($Script:Config.BatchSize)"
@@ -49,7 +55,7 @@ if ($queue.Count -eq 0) {
     catch {
         # Getting all mailboxes in the tenant can fail sometimes, so we reschedule and try again
         RescheduleTask
-        exit 0
+        exit
     }
     foreach ($item in $mailboxes) {
         $obj = [PSCustomObject]@{
