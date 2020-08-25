@@ -102,10 +102,10 @@
                 }
                 if ($permission.AccessRights -in @('Reviewer', 'Contributor', 'AvailabilityOnly', 'LimitedDetails') -and $permission.User.UserType.Value -eq 'Internal')
                 {
-                    $this._addLogItem('CalendarPermissionTask', $mailbox, "Removing access right(s) [$($permission.AccessRights -join ',')] for user $($permission.User.ADRecipient.UserPrincipalName)")
+                    $this._addLogItem('CalendarPermissionTask', $mailbox, "Removing access right(s) [$($permission.AccessRights -join ',')] for user $($permission.User.DisplayName) <$($permission.User.RecipientPrincipal.PrimarySmtpAddress)>")
                     $params = @{
                         Identity = $calendarId
-                        User = $permission.User.ADRecipient.UserPrincipalName
+                        User = $permission.User.RecipientPrincipal.Guid.ToString()
                     }
                     [ExchangeOnline]::RemoveMailboxFolderPermission($params)
                 }
@@ -122,10 +122,10 @@
                     }
                     if ($permission.AccessRights.Count -ne $accessRights.Count)
                     {
-                        $this._addLogItem('CalendarPermissionTask', $mailbox, "Replacing access rigth(s) for $($permission.User.ADRecipient.UserPrincipalName) from [$($permission.AccessRights -join ',')] to [$($accessRights -join ',')]")
+                        $this._addLogItem('CalendarPermissionTask', $mailbox, "Replacing access right(s) for user $($permission.User.DisplayName) <$($permission.User.RecipientPrincipal.PrimarySmtpAddress)> from [$($permission.AccessRights -join ',')] to [$($accessRights -join ',')]")
                         $params = @{
                             Identity = $calendarId
-                            User = $permission.User.ADRecipient.UserPrincipalName
+                            User = $permission.User.RecipientPrincipal.Guid.ToString()
                             AccessRights = $accessRights
                         }
                         [ExchangeOnline]::SetMailboxFolderPermission($params)
