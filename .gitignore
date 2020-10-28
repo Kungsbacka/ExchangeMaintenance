@@ -3,4 +3,5 @@ deploy.cmd
 log.txt
 stacktrace.txt
 mailboxes.csv
+error_*.xml
 .vscode

@@ -102,6 +102,7 @@ $reasonsToReconnect = @(
     'UnableToFindServerForDatabaseException'
     'CommandNotFoundException'
     'MethodInvocationException'
+    'MailboxInfoStaleException'
 )
 
 # Call ProcessMailbox on mailboxes in batch
