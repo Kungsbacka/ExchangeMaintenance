@@ -14,7 +14,7 @@
     )
     process {
         if ($PSCmdlet.ParameterSetName -eq 'Message') {
-            $LogItem = New-Object 'LogItem' -ArgumentList @($Task, $Mailbox, $Message)
+            $LogItem = New-Object 'LogItem' -ArgumentList @($Task, $Mailbox, ($Message -replace "`r`n", ' '))
         }
         if ($LogItem) {
             if ($Script:Config.LogPath) {

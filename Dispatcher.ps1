@@ -94,7 +94,6 @@ if ($tasks.Count -eq 0) {
 
 $reasonsToReconnect = @(
     'ConnectionFailedTransientException'
-    'ADServerSettingsChangedException'
     'ADTopologyEndpointNotFoundException'
     'PSRemotingTransportException'
     'DatabaseUnavailableException'
@@ -104,6 +103,20 @@ $reasonsToReconnect = @(
     'MethodInvocationException'
     'MailboxInfoStaleException'
 )
+
+function ShouldReconnect($err)
+{
+    if ($err.CateoryInfo.Reason -in $reasonsToReconnect) {
+        $true
+    }
+    elseif ($err.Exception.Message -like '*max proxy depth limitation*') {
+        $true
+    }
+    elseif ($err.Exception.Message -like '*ADServerSettingsChangedException*') {
+        $true
+    }
+    $false
+}
 
 # Call ProcessMailbox on mailboxes in batch
 $mailboxCount = 0
@@ -115,8 +128,7 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
             $task.ProcessMailbox($mailbox)
         }
         catch {
-            if ($_.CategoryInfo.Reason -in $reasonsToReconnect) {
-                $queue.Enqueue($mailbox) # if connection failed we want to process current mailbox on next run
+            if (ShouldReconnect $_) {
                 $needToReconnect = $true
                 Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
                 break
