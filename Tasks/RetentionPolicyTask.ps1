@@ -19,7 +19,7 @@
 
     hidden [void]_internalProcessMailbox($mailbox) {
         if ($mailbox.PrimarySmtpAddress -like '*@elev.kungsbacka.se') {
-            $policy = 'Elev Retention Policy'
+            $policy = 'Elever Retention Policy KBA'
         }
         else {
             $policy = 'Personal Retention Policy'
