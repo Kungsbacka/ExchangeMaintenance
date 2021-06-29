@@ -62,13 +62,13 @@
     }
 
     hidden [void]_internalProcessMailbox($mailbox) {
-        # This method does the actual processing.
-        # Called once for each mailbox in the batch.
+        # Must be overridden. This method does the actual processing
+        # and is called once for each mailbox in the batch.
         throw 'Not implemented'
     }
 
     hidden [void]_internalCleanup() {
-        # Override if cleanups is needed after processing.
+        # Override if cleanup is needed after processing.
         # Called once after all mailboxes in a batch are processed.
     }
 }
