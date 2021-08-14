@@ -13,6 +13,12 @@ function RescheduleTask {
     $null = Set-ScheduledTask -TaskName $Script:Config.ScheduledTaskName -Trigger $trigger
 }
 
+# Clean up default parameter values so it will not interfere
+$default = $PSDefaultParameterValues.GetEnumerator() | Where-Object Name -like 'Connect-ExchangeOnline*'
+foreach ($item in $default) {
+    $PSDefaultParameterValues.Remove($item.Name)
+}
+
 $tasks = New-Object -TypeName 'System.Collections.ArrayList'
 Get-ChildItem "$PSScriptRoot\Tasks\*.ps1" | ForEach-Object {
     . $_.FullName
@@ -50,7 +56,10 @@ catch {
 if ($queue.Count -eq 0) {
     Log -Task 'Dispatcher:GetMailbox' -Message 'No saved mailboxes found. Fetching all mailboxes'
     try {
-        $mailboxes = [ExchangeOnline]::GetMailbox(@{ResultSize = 'Unlimited'})
+        $mailboxes = [ExchangeOnline]::GetMailbox(@{
+            ResultSize = 'Unlimited'
+            Properties = @('AddressBookPolicy','RetentionPolicy','ForwardingAddress','ForwardingSmtpAddress','IsResource','IsShared','ResourceType')
+        })
     }
     catch {
         # Getting all mailboxes in the tenant can fail sometimes, so we reschedule and try again

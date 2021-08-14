@@ -1,6 +1,8 @@
 ﻿$Script:Config = @{
-    ExchangeUser = '<Tenant user with Exchange administrative permissions>'
-    ExchangePassword = '<Encrypted password>'
+    AppCertificatePath = '<Path to app registration certificate>'
+    AppCertificatePassword = '<Encrypted password for certificate>'
+    AppId = '<App registration ID>'
+    Organization = 'company.onmicrosoft.com'
     BatchSize = 500
     BatchDelay = ([TimeSpan]::FromMinutes(10))
     ScheduledTaskName = 'ExchangeMaintenance'

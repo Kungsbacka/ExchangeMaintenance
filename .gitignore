@@ -5,3 +5,5 @@ stacktrace.txt
 mailboxes.csv
 error_*.xml
 .vscode
+*.cer
+*.pfx

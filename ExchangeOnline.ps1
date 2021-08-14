@@ -1,8 +1,6 @@
 ﻿class ExchangeOnline
 {
     hidden static [bool]$_isConnected
-    hidden static [object]$_session
-    hidden static [object]$_module
 
     static [bool]$Simulate = $false
 
@@ -10,44 +8,30 @@
         if ([ExchangeOnline]::_isConnected) {
             return
         }
-        $credential = New-Object -TypeName 'System.Management.Automation.PSCredential' -ArgumentList @(
-            $Script:Config.ExchangeUser
-            $Script:Config.ExchangePassword | ConvertTo-SecureString
-        )
         $params = @{
-            Name = 'EXO'
-            ConfigurationName = 'Microsoft.Exchange'
-            ConnectionUri = 'https://outlook.office365.com/powershell'
-            Credential = $credential
-            Authentication = 'Basic'
-            AllowRedirection = $true
-        }
-        [ExchangeOnline]::_session = New-PSSession @params
-        $params = @{
-            Session = [ExchangeOnline]::_session
-            AllowClobber = $true
+            CertificateFilePath = $Script:Config.AppCertificatePath
+            CertificatePassword = ($Script:Config.AppCertificatePassword | ConvertTo-SecureString)
+            AppId = $Script:Config.AppId
+            Organization = $Script:Config.Organization
             CommandName = @(
-                'Get-Mailbox'
-                'Get-MailboxFolderPermission'
-                'Get-MailboxFolderStatistics'
-                'Get-MailboxStatistics'
+                'Get-EXOMailbox'
+                'Get-EXOMailboxFolderPermission'
+                'Get-EXOMailboxFolderStatistics'
+                'Get-EXOMailboxStatistics'
                 'Remove-MailboxFolderPermission'
                 'Set-Mailbox'
                 'Set-MailboxFolderPermission'
             )
+            PageSize = 5000
+            ShowBanner = $false
+            ShowProgress = $false
         }
-        [ExchangeOnline]::_module = Import-PSSession @params
+        Connect-ExchangeOnline @params
         [ExchangeOnline]::_isConnected = $true
     }
 
     hidden static [void]_internalReconnect() {
         [ExchangeOnline]::_isConnected = $false
-        if ([ExchangeOnline]::_module) {
-            Remove-Module -Name ([ExchangeOnline]::_module.Name)
-        }
-        if ([ExchangeOnline]::_session) {
-            Remove-PSSession -Session ([ExchangeOnline]::_session)
-        }
         [ExchangeOnline]::Connect()
     }
 
@@ -70,19 +54,19 @@
     }
 
     static [object]GetMailbox([hashtable]$params) {
-        return [ExchangeOnline]::_internalExecuteCommand('Get-Mailbox', $params)
+        return [ExchangeOnline]::_internalExecuteCommand('Get-EXOMailbox', $params)
     }
 
     static [object]GetMailboxFolderPermission([hashtable]$params) {
-        return [ExchangeOnline]::_internalExecuteCommand('Get-MailboxFolderPermission', $params)
+        return [ExchangeOnline]::_internalExecuteCommand('Get-EXOMailboxFolderPermission', $params)
     }
 
     static [object]GetMailboxFolderStatistics([hashtable]$params) {
-        return [ExchangeOnline]::_internalExecuteCommand('Get-MailboxFolderStatistics', $params)
+        return [ExchangeOnline]::_internalExecuteCommand('Get-EXOMailboxFolderStatistics', $params)
     }
 
     static [object]GetMailboxStatistics([hashtable]$params) {
-        return [ExchangeOnline]::_internalExecuteCommand('Get-MailboxStatistics', $params)
+        return [ExchangeOnline]::_internalExecuteCommand('Get-EXOMailboxStatistics', $params)
     }
 
     static [void]RemoveMailboxFolderPermission([hashtable]$params) {
