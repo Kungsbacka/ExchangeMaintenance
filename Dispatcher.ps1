@@ -101,7 +101,9 @@ $reasonsToReconnect = @(
     'UnableToFindServerForDatabaseException'
     'CommandNotFoundException'
     'MethodInvocationException'
-    'MailboxInfoStaleException'
+    'DCOverloadedException'
+    'ADServerSettingsChangedException'
+    'OverBudgetException'
 )
 
 function ShouldReconnect($err)
@@ -110,9 +112,6 @@ function ShouldReconnect($err)
         $true
     }
     elseif ($err.Exception.Message -like '*max proxy depth limitation*') {
-        $true
-    }
-    elseif ($err.Exception.Message -like '*ADServerSettingsChangedException*') {
         $true
     }
     $false
@@ -136,7 +135,16 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
             # Log all other exceptions except "mailbox not found". Since we are working with a cached list of mailboxes,
             # this is bound to happen now and then and will just clutter the log.
             if ($_.CategoryInfo.Reason -ne 'ManagementObjectNotFoundException') {
-                Log -Task 'Dispatcher:Process' -Mailbox $mailbox -Message "Processing task $($task.GetType().Name) failed with error: $($_.ToString())" -ErrorRecord $_
+                $params = @{
+                    Task = 'Dispatcher:Process'
+                    Mailbox = $mailbox
+                    Message = "Processing task $($task.GetType().Name) failed with error: $($_.ToString())"
+                }
+                if (-not $needToReconnect) {
+                    # Only save error record if the error is not identified in ShouldReconnect()
+                    $params.ErrorRecord = $_
+                }
+                Log @params
             }
         }
         $task.GetLog() | Log
