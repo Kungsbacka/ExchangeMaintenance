@@ -143,7 +143,7 @@ while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
             }
             # Log all other exceptions except "mailbox not found". Since we are working with a cached list of mailboxes,
             # this is bound to happen now and then and will just clutter the log.
-            if ($_.CategoryInfo.Reason -ne 'ManagementObjectNotFoundException') {
+            if ($_.Exception.Message -notlike '*ManagementObjectNotFoundException*') {
                 $params = @{
                     Task = 'Dispatcher:Process'
                     Mailbox = $mailbox
