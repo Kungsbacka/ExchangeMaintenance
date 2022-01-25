@@ -58,7 +58,15 @@ if ($queue.Count -eq 0) {
     try {
         $mailboxes = [ExchangeOnline]::GetMailbox(@{
             ResultSize = 'Unlimited'
-            Properties = @('AddressBookPolicy','RetentionPolicy','ForwardingAddress','ForwardingSmtpAddress','IsResource','IsShared','ResourceType')
+            Properties = @(
+                'AddressBookPolicy'
+                'RetentionPolicy'
+                'ForwardingAddress'
+                'ForwardingSmtpAddress'
+                'IsResource'
+                'IsShared'
+                'ResourceType'
+            )
         })
     }
     catch {
@@ -101,65 +109,40 @@ if ($tasks.Count -eq 0) {
     exit 99
 }
 
-$reasonsToReconnect = @(
-    'ConnectionFailedTransientException'
-    'ADTopologyEndpointNotFoundException'
-    'PSRemotingTransportException'
-    'DatabaseUnavailableException'
-    'MapiNetworkErrorException'
-    'UnableToFindServerForDatabaseException'
-    'CommandNotFoundException'
-    'MethodInvocationException'
-    'DCOverloadedException'
-    'ADServerSettingsChangedException'
-    'OverBudgetException'
-)
+# Keep track of how many errors we have for each batch. If the count exceeds a
+# predefined threshold, we quit and reschedule.
+$Script:errorCount = 0
 
-function ShouldReconnect($err)
+function ShouldQuitAndReschedule()
 {
-    if ($err.CateoryInfo.Reason -in $reasonsToReconnect) {
-        $true
-    }
-    elseif ($err.Exception.Message -like '*max proxy depth limitation*') {
-        $true
-    }
-    $false
+    $Script:errorCount += 1
+    $Script:errorCount -gt 10
 }
 
 # Call ProcessMailbox on mailboxes in batch
 $mailboxCount = 0
-$needToReconnect = $false
-while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
+:outer while ($mailboxCount -lt $Script:Config.BatchSize -and $queue.Count -gt 0) {
     $mailbox = $queue.Dequeue()
     foreach ($task in $tasks) {
         try {
             $task.ProcessMailbox($mailbox)
         }
         catch {
-            if (ShouldReconnect $_) {
-                $needToReconnect = $true
-                Log -Task 'Dispatcher:Process' -Message "Connection to Exchange Online broke with error: $($_.ToString())"
-                break
-            }
-            # Log all other exceptions except "mailbox not found". Since we are working with a cached list of mailboxes,
-            # this is bound to happen now and then and will just clutter the log.
+            # Ignore "mailbox not found" errors
             if ($_.Exception.ToString() -notlike '*ManagementObjectNotFoundException*') {
                 $params = @{
                     Task = 'Dispatcher:Process'
                     Mailbox = $mailbox
                     Message = "Processing task $($task.GetType().Name) failed with error: $($_.ToString())"
-                }
-                if (-not $needToReconnect) {
-                    # Only save error record if the error is not identified in ShouldReconnect()
-                    $params.ErrorRecord = $_
+                    ErrorRecord = $_
                 }
                 Log @params
             }
+            if (ShouldQuitAndReschedule) {
+                break outer
+            }
         }
         $task.GetLog() | Log
-    }
-    if ($needToReconnect) {
-        break # Stop processing and reschedule
     }
     $mailboxCount++
 }
