@@ -14,7 +14,9 @@ Mailboxes are processed in batches and after each batch the remaining mailboxes 
 
 ## Deploy
 
-Rename Config.example.ps1 to Config.ps1 and update configuration settings. ExchangePassword must be encrypted using DPAPI with the service account that is going to run the script (preferably a gMSA). This can be accomplished by following the steps below:
+The script depends on the [Exchange Online PowerShell V2 module](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell-v2?view=exchange-ps) and uses a service principal with certificate authentication. Instructions on how to create a service principal and assign permissions can be found [here](https://docs.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps).
+
+Rename Config.example.ps1 to Config.ps1 and update configuration settings. AppCertificatePassword must be encrypted using DPAPI with the service account that is going to run the script (preferably a gMSA). This can be accomplished by following the steps below:
 
 1. Start PowerShell as the service account. If the account is a gMSA, you can do this with PsExec (<https://docs.microsoft.com/en-us/sysinternals/downloads/psexec>).
 
@@ -24,7 +26,7 @@ Rename Config.example.ps1 to Config.ps1 and update configuration settings. Excha
 
     `(Get-Credential -UserName '(Not used)' -Message 'Exchange password').Password | ConvertFrom-SecureString | Set-Clipboard`
 
-3. Paste the encrypted password into the configuration file (ExchangePassword).
+3. Paste the encrypted password into the configuration file (AppCertificatePassword).
 
 The service account must have write permission to script root to be able to save remaining mailboxes as a CSV file (mailboxes.csv). It must also have appropriate permissions on meta directory and log databases.
 
