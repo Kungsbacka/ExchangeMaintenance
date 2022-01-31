@@ -11,6 +11,7 @@ Mailboxes are processed in batches and after each batch the remaining mailboxes 
 * CalendarPermissionTask: Restores default permissions and removes more restrictive permissions to make sure all users are at least "Reviewer" on the main calendar.
 * AddressBookTask: Sets correct Address Book Policy (ABP) on all mailboxes.
 * InventoryTask: Takes inventory of all mailboxes in the tenant.
+* RetentionPolicyTask: Sets correct retention policy.
 
 ## Deploy
 
