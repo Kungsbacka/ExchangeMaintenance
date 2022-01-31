@@ -22,7 +22,7 @@ Rename Config.example.ps1 to Config.ps1 and update configuration settings. AppCe
 
     `psexec -i -u <gMSA> powershell.exe`
 
-2. Run the following one-liner and enter the Exchange password in the credentials dialog (username doesn't matter, but cannot be empty).
+2. Run the following one-liner and enter the certificate password in the credentials dialog (username doesn't matter, but cannot be empty).
 
     `(Get-Credential -UserName '(Not used)' -Message 'Exchange password').Password | ConvertFrom-SecureString | Set-Clipboard`
 
