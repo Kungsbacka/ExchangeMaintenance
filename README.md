@@ -4,7 +4,7 @@
 
 Exchange Maintenance is a collection of mailbox maintenance tasks that are performed on all, or a subset of, mailboxes in an Exchange Online tenant.
 
-Mailboxes are processed in batches and after each batch the remaining mailboxes that have not been processed are written to a CSV file. The script then reschedule itself and continues processing at a later time. When all mailboxes are processed, the script fetches all mailboxes again an starts over.
+Mailboxes are processed in batches and after each batch, the remaining mailboxes that have not been processed are written to a CSV file. The script then reschedules itself and continues processing at a later time. When all mailboxes are processed, the script fetches all mailboxes again and starts over.
 
 ## Tasks
 
@@ -23,13 +23,13 @@ Rename Config.example.ps1 to Config.ps1 and update configuration settings. AppCe
 
     `psexec -i -u <gMSA> powershell.exe`
 
-2. Run the following one-liner and enter the certificate password in the credentials dialog (username doesn't matter, but cannot be empty).
+2. Run the following one-liner and enter the certificate password in the credentials dialog.
 
     `(Get-Credential -UserName '(Not used)' -Message 'Exchange password').Password | ConvertFrom-SecureString | Set-Clipboard`
 
 3. Paste the encrypted password into the configuration file (AppCertificatePassword).
 
-The service account must have write permission to script root to be able to save remaining mailboxes as a CSV file (mailboxes.csv). It must also have appropriate permissions on meta directory and log databases.
+The service account must have write permission to script root to be able to save the remaining mailboxes to a CSV file (mailboxes.csv). It must also have appropriate permissions on the meta-directory and log databases.
 
 ## Scheduled task
 
