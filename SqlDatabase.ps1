@@ -88,7 +88,7 @@
         $cmd.CommandType = $queryType
         if ($null -ne $params) {
             foreach ($item in $params.GetEnumerator()) {
-                $null = $cmd.Parameters.Add($item.Name, $item.Value)
+                $null = $cmd.Parameters.AddWithValue($item.Name, $item.Value)
             }
         }
         return $cmd
