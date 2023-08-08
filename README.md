@@ -15,7 +15,7 @@ Mailboxes are processed in batches and after each batch, the remaining mailboxes
 
 ## Deploy
 
-The script depends on the [Exchange Online PowerShell V2 module](https://docs.microsoft.com/en-us/powershell/exchange/exchange-online-powershell-v2?view=exchange-ps) and uses a service principal with certificate authentication to connect. Instructions on how to create a service principal and assign permissions can be found [here](https://docs.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps).
+The script depends on the [ExchangeOnlineManagement module](https://www.powershellgallery.com/packages/ExchangeOnlineManagement/3.0.0) and uses a service principal with certificate authentication to connect. Instructions on how to create a service principal and assign permissions can be found [here](https://docs.microsoft.com/en-us/powershell/exchange/app-only-auth-powershell-v2?view=exchange-ps).
 
 Rename Config.example.ps1 to Config.ps1 and update configuration settings. AppCertificatePassword must be encrypted using DPAPI with the service account that is going to run the script (preferably a gMSA). This can be accomplished by following the steps below:
 
