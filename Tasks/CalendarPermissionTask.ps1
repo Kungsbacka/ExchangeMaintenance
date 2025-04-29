@@ -68,7 +68,13 @@
         }
         if ($null -eq $anonymous)
         {
-            $this._addLogItem('CalendarPermissionTask', $mailbox, "Missing 'Anonymous' permission")
+            $this._addLogItem('CalendarPermissionTask', $mailbox, "Adding missing 'Anonymous' permission as [None]")
+            $params = @{
+                Identity = $calendarId
+                User = 'Anonymous'
+                AccessRights = 'None'
+            }
+            [ExchangeOnline]::AddMailboxFolderPermission($params)
         }
         elseif ($anonymous.AccessRights -ne 'None')
         {

@@ -14,6 +14,7 @@
             AppId = $Script:Config.AppId
             Organization = $Script:Config.Organization
             CommandName = @(
+                'Add-MailboxFolderPermission'
                 'Get-EXOMailbox'
                 'Get-EXOMailboxFolderPermission'
                 'Get-EXOMailboxFolderStatistics'
@@ -25,6 +26,8 @@
             PageSize = 5000
             ShowBanner = $false
             ShowProgress = $false
+            SkipLoadingCmdletHelp = $true
+            SkipLoadingFormatData = $true
         }
         Connect-ExchangeOnline @params
         [ExchangeOnline]::_isConnected = $true
@@ -79,5 +82,9 @@
 
     static [void]SetMailboxFolderPermission([hashtable]$params) {
         [ExchangeOnline]::_internalExecuteCommand('Set-MailboxFolderPermission', $params)
+    }
+
+    static [void]AddMailboxFolderPermission([hashtable]$params) {
+        [ExchangeOnline]::_internalExecuteCommand('Add-MailboxFolderPermission', $params)
     }
 }

@@ -7,3 +7,4 @@ error_*.xml
 .vscode
 *.cer
 *.pfx
+*.b64
