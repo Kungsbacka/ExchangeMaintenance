@@ -5,7 +5,7 @@
 
     hidden [void]_internalInitialize() {
         $exclude = @{}
-        Get-ADGroupMember -Identity 'G-KS-Förtroendevalda' | ForEach-Object {
+        Get-ADGroupMember -Identity 'GA-FV-Alla' | ForEach-Object {
             $exclude.Add($_.SamAccountName, 1)
         }
         $query = "SELECT UserPrincipalName,SamAccountName FROM dbo.ExchangeMaintenanceUserView WHERE UserPrincipalName NOT LIKE '%@elev.kungsbacka.se'"
