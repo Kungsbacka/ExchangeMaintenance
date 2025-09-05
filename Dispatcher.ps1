@@ -29,13 +29,13 @@ try {
     [ExchangeOnline]::Connect()
 }
 catch {
-    Log -Task 'Dispatcher:Connect' -Message 'Failed to connect to Exchange' -ErrorRecord $_
+    Write-Log -Task 'Dispatcher:Connect' -Message 'Failed to connect to Exchange' -ErrorRecord $_
     RescheduleTask
     exit
 }
 [ExchangeOnline]::Simulate = $Script:Config.Simulate
 
-Log -Task 'Dispatcher:Start' -Message "Started new batch. Batch size is $($Script:Config.BatchSize)"
+Write-Log -Task 'Dispatcher:Start' -Message "Started new batch. Batch size is $($Script:Config.BatchSize)"
 
 $startTime = Get-Date
 
@@ -47,14 +47,14 @@ try {
         }
         $queue.Enqueue($_)
     }
-    Log -Task 'Dispatcher:ImportCsv' -Message "Loaded $($queue.Count) saved mailboxes"
+    Write-Log -Task 'Dispatcher:ImportCsv' -Message "Loaded $($queue.Count) saved mailboxes"
 }
 catch {
     # Failed to load file
 }
 
 if ($queue.Count -eq 0) {
-    Log -Task 'Dispatcher:GetMailbox' -Message 'No saved mailboxes found. Fetching all mailboxes'
+    Write-Log -Task 'Dispatcher:GetMailbox' -Message 'No saved mailboxes found. Fetching all mailboxes'
     try {
         $mailboxes = [ExchangeOnline]::GetMailbox(@{
             ResultSize = 'Unlimited'
@@ -99,13 +99,13 @@ foreach ($task in $tasks) {
     }
     catch {
         $tasks.Remove($task)
-        Log -Task 'Dispatcher:Initialize' -Message "Initialization for task $($task.GetType().Name) failed with error: $($_.ToString())"
+        Write-Log -Task 'Dispatcher:Initialize' -Message "Initialization for task $($task.GetType().Name) failed with error: $($_.ToString())"
     }
 }
 if ($tasks.Count -eq 0) {
     # If all initializers failed, there must be something seriously wrong and running the
     # script again will probably not solve the problem.
-    Log -Task 'Dispatcher:Initialize' -Message "Initializers for all tasks failed. Script is NOT rescheduled."
+    Write-Log -Task 'Dispatcher:Initialize' -Message "Initializers for all tasks failed. Script is NOT rescheduled."
     exit 99
 }
 
@@ -136,7 +136,7 @@ $mailboxCount = 0
                     Message = "Processing task $($task.GetType().Name) failed with error: $($_.ToString())"
                     ErrorRecord = $_
                 }
-                Log @params
+                Write-Log @params
             }
             if (ShouldQuitAndReschedule) {
                 break outer
@@ -153,7 +153,7 @@ foreach ($task in $tasks) {
         $task.Cleanup()
     }
     catch {
-        Log -Task 'Dispatcher:Cleanup' -Message "Cleanup for task $($task.GetType().Name) failed with error: $($_.ToString())"
+        Write-Log -Task 'Dispatcher:Cleanup' -Message "Cleanup for task $($task.GetType().Name) failed with error: $($_.ToString())"
     }
 }
 
@@ -165,6 +165,6 @@ else {
 }
 
 $batchTime = (Get-Date) - $startTime
-Log -Task 'Dispatcher:End' -Message "Batch ended after $($batchTime.ToString('hh\:mm\:ss'))"
+Write-Log -Task 'Dispatcher:End' -Message "Batch ended after $($batchTime.ToString('hh\:mm\:ss'))"
 
 RescheduleTask

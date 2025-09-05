@@ -1,4 +1,4 @@
-﻿function Log
+﻿function Write-Log
 {
     param (
         [Parameter(Mandatory=$false,ValueFromPipeline=$true,ParameterSetName='LogItem')]
