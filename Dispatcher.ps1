@@ -19,6 +19,9 @@ foreach ($item in $default) {
     $PSDefaultParameterValues.Remove($item.Name)
 }
 
+# Clean up cached ExchangeOnlineModule to avoid running out of diskspace
+Get-ChildItem "$($env:TEMP)\tmpEXO_*" | Remove-Item -Recurse -Force
+
 $tasks = New-Object -TypeName 'System.Collections.ArrayList'
 Get-ChildItem "$PSScriptRoot\Tasks\*.ps1" | ForEach-Object {
     . $_.FullName
